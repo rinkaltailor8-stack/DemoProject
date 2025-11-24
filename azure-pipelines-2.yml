@@ -1,19 +1,50 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+# -----------------------------------
+# Stage 1: Build
+# -----------------------------------
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+    - script: echo "Building app..."
+    - script: echo "App built successfully."
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+    # Build Tag
+    - powershell: |
+        Write-Host "##vso[build.addbuildtag]build-stage"
+        Write-Host "##vso[build.addbuildtag]demo"
+      displayName: "Add Build Tags"
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    # Publish artifact
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'dist'
+        artifactName: 'drop'
+
+    # Artifact Tag
+    - powershell: |
+        Write-Host "##vso[build.addbuildtag]artifact-drop"
+      displayName: "Tag Artifact"
+
+# -----------------------------------
+# Stage 2: Deploy (Release Tag + Environment Tag)
+# -----------------------------------
+- stage: Deploy
+  dependsOn: Build
+  jobs:
+  - deployment: DeployJob
+    environment: 
+      name: "Dev"
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploying to Dev environment..."
+
+          # Release Tag
+          - powershell: |
+              Write-Host "##vso[build.addbuildtag]release-dev"
+            displayName: "Add Release Tag"
