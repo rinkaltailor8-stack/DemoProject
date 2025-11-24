@@ -27,3 +27,7 @@ steps:
     Write-Host "##vso[build.addbuildtag]v1.0"
   displayName: "Add Build Tags"
 
+- script: echo "Producing artifact..."
+- powershell: Write-Host "##vso[build.addbuildtag]publish-ready"
+
+
