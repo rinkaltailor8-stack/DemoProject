@@ -3,17 +3,16 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- main
+# pipelineB.yml
+resources:
+  pipelines:
+    - pipeline: DemoProject Main Pipeline
+      source: "DemoProject Main Pipeline"
+      tags: 
+        - publish-ready     # ← tag filter
 
-pool:
-  vmImage: ubuntu-latest
+trigger: none
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- script: echo "Triggered because Pipeline-A used tag publish-ready"
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
