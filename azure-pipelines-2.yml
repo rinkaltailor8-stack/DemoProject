@@ -18,19 +18,52 @@ stages:
         Write-Host "##vso[build.addbuildtag]demo"
       displayName: "Add Build Tags"
     
-    - script: npm install
-      displayName: Install
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '18.x'
+      displayName: Install Node.js
 
-    - script: npm run build
-      displayName: Build App
+    # --------------------------
+    # Install dependencies
+    # --------------------------
+    - script: |
+        npm install
+        npx expo install
+      displayName: Install JS Dependencies
 
-    - script: ls -R $(Build.SourcesDirectory)
-      displayName: Debug Directory Structure
+    # --------------------------
+    # Build Android APK (Debug)
+    # --------------------------
+    - script: |
+        cd android
+        chmod +x ./gradlew
+        ./gradlew assembleDebug
+      displayName: Build Android Debug APK
 
+    # --------------------------
+    # Copy APK to a known location
+    # --------------------------
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)
+        cp android/app/build/outputs/apk/debug/*.apk $(Build.ArtifactStagingDirectory)/
+      displayName: Copy APK
+
+    # --------------------------
+    # Publish APK as Pipeline Artifact
+    # --------------------------
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(Build.SourcesDirectory)/dist'
-        artifactName: 'drop'             
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'apk'
+        publishLocation: 'Container'
+      displayName: Publish APK Artifact
+    
+    - powershell: |
+        Write-Host "##vso[build.addbuildtag]apk"
+        Write-Host "##vso[build.addbuildtag]debug"
+        Write-Host "##vso[build.addbuildtag]expo"
+        Write-Host "##vso[build.addbuildtag]android"
+      displayName: "Tag Artifact"
 
 # -----------------------------------
 # Stage 2: Deploy (Release Tag + Environment Tag)
