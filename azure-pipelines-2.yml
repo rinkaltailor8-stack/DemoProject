@@ -17,17 +17,6 @@ stages:
         Write-Host "##vso[build.addbuildtag]build-stage"
         Write-Host "##vso[build.addbuildtag]demo"
       displayName: "Add Build Tags"
-
-    # Publish artifact
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: 'dist'
-        artifactName: 'drop'
-
-    # Artifact Tag
-    - powershell: |
-        Write-Host "##vso[build.addbuildtag]artifact-drop"
-      displayName: "Tag Artifact"
     
     - script: npm install
       displayName: Install
