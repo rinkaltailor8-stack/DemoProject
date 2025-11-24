@@ -28,6 +28,20 @@ stages:
     - powershell: |
         Write-Host "##vso[build.addbuildtag]artifact-drop"
       displayName: "Tag Artifact"
+    
+    - script: npm install
+      displayName: Install
+
+    - script: npm run build
+      displayName: Build App
+
+    - script: ls -R $(Build.SourcesDirectory)
+      displayName: Debug Directory Structure
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.SourcesDirectory)/dist'
+        artifactName: 'drop'             
 
 # -----------------------------------
 # Stage 2: Deploy (Release Tag + Environment Tag)
@@ -48,3 +62,6 @@ stages:
           - powershell: |
               Write-Host "##vso[build.addbuildtag]release-dev"
             displayName: "Add Release Tag"
+
+
+
