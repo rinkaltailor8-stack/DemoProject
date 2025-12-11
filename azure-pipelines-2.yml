@@ -12,7 +12,7 @@ stages:
   - job: BuildJob
     steps:
     - bash: |
-        echo "##vso[task.setvariable variable=isVeracodescan]true"
+        echo "##vso[task.setvariable variable=isVeracodescan;isOutput=true]true"
       displayName: 'Set Variable Step'
 
 
