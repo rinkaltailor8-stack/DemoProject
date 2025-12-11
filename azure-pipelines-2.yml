@@ -1,6 +1,8 @@
 trigger:
 - main
 
+variables:
+- group: test
 stages:
 # -----------------------------------
 # Stage 1: Build
@@ -9,81 +11,8 @@ stages:
   jobs:
   - job: BuildJob
     steps:
-    - script: echo "Building app..."
-    - script: echo "App built successfully."
-
-    # Build Tag
-    - powershell: |
-        Write-Host "##vso[build.addbuildtag]build-stage"
-        Write-Host "##vso[build.addbuildtag]demo"
-      displayName: "Add Build Tags"
-    
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-      displayName: Install Node.js
-
-    # --------------------------
-    # Install dependencies
-    # --------------------------
-    - script: |
-        npm install
-        npx expo install
-      displayName: Install JS Dependencies
-
-    # --------------------------
-    # Build Android APK (Debug)
-    # --------------------------
-    - script: |
-        cd android
-        chmod +x ./gradlew
-        ./gradlew assembleDebug
-      displayName: Build Android Debug APK
-
-    # --------------------------
-    # Copy APK to a known location
-    # --------------------------
-    - script: |
-        mkdir -p $(Build.ArtifactStagingDirectory)
-        cp android/app/build/outputs/apk/debug/*.apk $(Build.ArtifactStagingDirectory)/
-      displayName: Copy APK
-
-    # --------------------------
-    # Publish APK as Pipeline Artifact
-    # --------------------------
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: 'apk'
-        publishLocation: 'Container'
-      displayName: Publish APK Artifact
-    
-    - powershell: |
-        Write-Host "##vso[build.addbuildtag]apk"
-        Write-Host "##vso[build.addbuildtag]debug"
-        Write-Host "##vso[build.addbuildtag]expo"
-        Write-Host "##vso[build.addbuildtag]android"
-      displayName: "Tag Artifact"
-
-# -----------------------------------
-# Stage 2: Deploy (Release Tag + Environment Tag)
-# -----------------------------------
-- stage: Deploy
-  dependsOn: Build
-  jobs:
-  - deployment: DeployJob
-    environment: 
-      name: "Dev"
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo "Deploying to Dev environment..."
-
-          # Release Tag
-          - powershell: |
-              Write-Host "##vso[build.addbuildtag]release-dev"
-            displayName: "Add Release Tag"
-
+    - bash: |
+        echo "##vso[task.setvariable variable=isVeracodescan]true"
+      displayName: 'Set Variable Step'
 
 
